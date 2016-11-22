@@ -8,7 +8,7 @@ public:
 	const float paddleSpeed;
 	float rightPaddleSpeed;
 
-	Paddle () : paddleSize(25.0f, 100.0f), paddleSpeed(400.f), rightPaddleSpeed(0.f) {	
+	Paddle () : paddleSize(100.0f, 25.0f), paddleSpeed(400.f), rightPaddleSpeed(0.f) {
 		// Create the left paddle	
 		paddle.setSize (paddleSize - sf::Vector2f (3, 3));
 		paddle.setOutlineThickness (1);

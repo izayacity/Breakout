@@ -8,11 +8,11 @@
 class Gameplay {
 private:
 	const float pi = 3.14159f;
-	const int gameWidth = 800;
-	const int gameHeight = 600;
+	const int gameWidth = 600;
+	const int gameHeight = 800;
 public:
 	Ball pong;
-	Paddle leftPaddle;
+	Paddle myPaddle;
 	Paddle rightPaddle;
 
 	sf::Font fontSansation;
@@ -29,7 +29,7 @@ public:
 	sf::Event event;
 
 	unsigned int p1Score = -1, p2Score = 0;
-	enum states { INTRO, MODE1, MODE2, P1WON, P1LOST };
+	enum states { INTRO, MODE1, MODE2, MODE1playing, MODE2playing, P1WON, P1LOST };
 	int gameState = INTRO;
 	int isSlow = 0;
 
