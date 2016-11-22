@@ -29,7 +29,7 @@ public:
 	sf::Event event;
 
 	unsigned int p1Score = -1, p2Score = 0;
-	enum states { INTRO, MODE1, MODE2, MODE1playing, MODE2playing, P1WON, P1LOST };
+	enum states { INTRO, MODE1, MODE2, RESUME1, RESUME2, P1WON, P1LOST };
 	int gameState = INTRO;
 	int isSlow = 0;
 

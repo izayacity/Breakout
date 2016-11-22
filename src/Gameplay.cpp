@@ -11,6 +11,7 @@
 
 int Gameplay::init () {	
 	std::srand (static_cast<unsigned int>(std::time (NULL)));
+
 	// Create the window of the application
 	sf::RenderWindow window (sf::VideoMode (gameWidth, gameHeight, 32), "Breakout++");
 	window.setFramerateLimit (60); // call it once, after creating the window
@@ -21,40 +22,48 @@ int Gameplay::init () {
 	if (!fontArial.loadFromFile ("resources/arial.ttf"))
 		return EXIT_FAILURE;
 	
+	// Win text
 	sf::Text won ("You won!\nPress space to restart or\nesc to exit.", fontSansation, 40);
 	won.setPosition (gameWidth / 2 - won.getGlobalBounds ().width / 2, gameHeight / 2 - won.getGlobalBounds ().height / 2);
 	won.setFillColor (sf::Color::White);
 
+	// Lost text
 	sf::Text lost ("You lost!\nPress space to restart or\nesc to exit.", fontSansation, 40);
 	lost.setPosition (gameWidth / 2 - lost.getGlobalBounds ().width / 2, gameHeight / 2 - lost.getGlobalBounds ().height / 2);
 	lost.setFillColor (sf::Color::White);
 
+	// Score text
 	score.setFont (fontArial);
 	score.setCharacterSize (30);
 	score.setFillColor (sf::Color (239, 187, 56));
 
-	// welcome background	
+	// Welcome background	
 	bgTex.loadFromFile ("resources/snow.jpg");
 	sf::Vector2f sz ((float)window.getSize ().x, (float)window.getSize ().y);
 	shape.setSize (sz);
 	shape.setTexture (&bgTex);
 
-	// select game mode
+	// Select game mode
 	gameState = selectMode (window);
 
-	//Game loop window
+	// Game loop window
 	while (window.isOpen ()) {
 		// Handle events, esc to escape
 		while (window.pollEvent (event)) {
-			// Window closed or escape key pressed: exit
+			// Render the start window
 			if ((event.type == sf::Event::Closed) ||
 				((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))) {
-				window.close ();
+				// Select game mode
+				gameState = selectMode (window);  //To be made as resumeWindow ()
+
+				if (gameState == -1)
+					return EXIT_SUCCESS;
 				break;
 			}
 		}
-		// mode 1, single player
-		if (gameState == MODE1 || gameState == MODE1playing) {
+
+		// Mode 1, single player
+		if (gameState == MODE1 || gameState == RESUME1) {
 			gameMode1 ();
 
 			window.clear ();
@@ -62,6 +71,11 @@ int Gameplay::init () {
 			window.draw (myPaddle.paddle);
 			window.draw (score);
 			window.draw (pong.ball);
+		}
+
+		// Mode 1, single player
+		if (gameState == MODE2 || gameState == RESUME2) {
+
 		}
 
 		window.display ();
@@ -89,7 +103,7 @@ void Gameplay::updateScore () {
 }
 
 int Gameplay::selectMode (sf::RenderWindow& window) {
-	// welcome text
+	// Welcome text
 	sf::Text welcome[5];
 	std::string msg[5] = { "Press 1 - You VS Ai", "2 - You + Friend VS 2 Ai" , "Player1 uses WSAD", "Player2 uses Arrow Keys.", "Press Esc to exit." };
 	for (int i = 0; i < 5; i++) {
@@ -100,13 +114,13 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 		welcome[i].setFont (fontSansation);
 	}	
 
-	// main loop
+	// Main loop
 	while (true) {
 		sf::Event event;
 		while (window.pollEvent (event)) {
 			if (event.type == sf::Event::Closed || event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
 				window.close ();
-				return 0;
+				return -1;
 			}
 			if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Num1) {
 				gameState = MODE1;
@@ -115,7 +129,7 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 				updateScore ();
 				restart ();
 				window.clear ();
-				return 1;
+				return gameState;
 			} else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Num2) {
 				gameState = MODE2;
 				p1Score = 0;
@@ -123,18 +137,17 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 				updateScore ();
 				restart ();
 				window.clear ();
-				return 2;
+				return gameState;
 			}
 		}
 		window.clear ();
-		// put text and wait for select
+		// Put text and wait for select
 		window.draw (shape);
 		for (int i = 0; i < 5; i++)
 			window.draw (welcome[i]);
 
 		window.display ();
 	}
-	return 1;
 }
 
 void Gameplay::gameMode1 () {
@@ -158,8 +171,4 @@ void Gameplay::gameMode1 () {
 		myPaddle.paddle.move (myPaddle.paddleSpeed * deltaTime, 0.f);
 	}
 
-	if (sf::Keyboard::isKeyPressed (sf::Keyboard::Right) &&
-		(myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2 < gameWidth - 5.f)) {
-		myPaddle.paddle.move (myPaddle.paddleSpeed * deltaTime, 0.f);
-	}
 }
