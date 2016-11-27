@@ -22,7 +22,7 @@
     <ProjectGuid>{F84F5E90-D0C7-4139-9538-176F578414B4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>GAME230Breakout</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

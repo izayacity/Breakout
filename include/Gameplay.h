@@ -17,6 +17,7 @@ public:
 
 	sf::Font fontSansation;
 	sf::Font fontArial;
+	sf::Font fontHEM;
 	sf::Text pauseMessage;
 	sf::Clock AITimer;
 	sf::Text score;
@@ -38,4 +39,5 @@ public:
 	void updateScore ();
 	int selectMode (sf::RenderWindow& window);
 	void gameMode1 ();
+	void gameMode2 ();
 };
