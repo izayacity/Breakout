@@ -11,31 +11,39 @@
 
 int Gameplay::init () {	
 	std::srand (static_cast<unsigned int>(std::time (NULL)));
+	life = 3;
 
 	// Create the window of the application
 	sf::RenderWindow window (sf::VideoMode (gameWidth, gameHeight, 32), "Breakout++");
 	window.setFramerateLimit (60); // call it once, after creating the window
 
 	// Load the text font
-	if (!fontSansation.loadFromFile ("resources/sansation.ttf"))
+	if (!fontHNMed.loadFromFile ("resources/HelveticaNeueMed.ttf"))
 		return EXIT_FAILURE;
-	if (!fontArial.loadFromFile ("resources/arial.ttf"))
+	if (!fontHNM.loadFromFile ("resources/HelveticaNeue Medium.ttf"))
 		return EXIT_FAILURE;
-	if (!fontHEM.loadFromFile ("resources/helvetica-neue-medium.ttf"))
+	if (!fontHNL.loadFromFile ("resources/HelveticaNeue Light.ttf"))
 		return EXIT_FAILURE;
 	
 	// Win text
-	sf::Text won ("You won!\nPress space to restart or\nesc to exit.", fontHEM, 40);
-	won.setPosition (gameWidth / 2 - won.getGlobalBounds ().width / 2, gameHeight / 2 - won.getGlobalBounds ().height / 2);
-	won.setFillColor (sf::Color::White);
+	sf::Text wonText ("You won!\nPress esc to menu.", fontHNM, 40);
+	wonText.setPosition (gameWidth / 2 - wonText.getGlobalBounds ().width / 2, gameHeight / 2 - wonText.getGlobalBounds ().height / 2);
+	wonText.setFillColor (sf::Color::White);
 
 	// Lost text
-	sf::Text lost ("You lost!\nPress space to restart or\nesc to exit.", fontHEM, 40);
-	lost.setPosition (gameWidth / 2 - lost.getGlobalBounds ().width / 2, gameHeight / 2 - lost.getGlobalBounds ().height / 2);
-	lost.setFillColor (sf::Color::White);
+	sf::Text lostText ("You lost!\nPress esc to menu.", fontHNM, 40);
+	lostText.setPosition (gameWidth / 2 - lostText.getGlobalBounds ().width / 2, gameHeight / 2 - lostText.getGlobalBounds ().height / 2);
+	lostText.setFillColor (sf::Color::White);
+
+	// Life text
+	lifeText.setFont (fontHNL);
+	lifeText.setCharacterSize (30);
+	lifeText.setFillColor (sf::Color::Red);
+	lifeText.setString ("Life: 3");
+	lifeText.setPosition (10, gameHeight - 40);
 
 	// Score text
-	score.setFont (fontArial);
+	score.setFont (fontHNL);
 	score.setCharacterSize (30);
 	score.setFillColor (sf::Color (239, 187, 56));
 
@@ -48,8 +56,12 @@ int Gameplay::init () {
 	// Select game mode
 	gameState = selectMode (window);
 
-	// Game loop window
+	//////
+	/// Game loop window
+	//////
+
 	while (window.isOpen ()) {
+
 		// Handle events, esc to escape
 		while (window.pollEvent (event)) {
 			// Render the start window
@@ -63,6 +75,7 @@ int Gameplay::init () {
 				break;
 			}
 
+			// Space key to go to RESUME1 status
 			if (gameState == MODE1 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
 
 				// Reset the ball angle
@@ -71,9 +84,19 @@ int Gameplay::init () {
 					pong.ballAngle = - (std::rand () % 180) * pi / 180;
 				} while (std::abs (std::cos (pong.ballAngle)) <= 0.5f || std::abs (std::cos (pong.ballAngle)) >= 0.87);
 
-				gameState = RESUME1;
-				std::cout << "gameState: " << gameState << std::endl;				
+				gameState = RESUME1;			
 			}
+
+		}
+
+		if (life <= 0) {
+			gameState = P1LOST;
+			window.clear ();
+			window.draw (shape);
+			window.draw (myPaddle.paddle);
+			window.draw (pong.ball);
+			window.draw (lifeText);
+			window.draw (lostText);			
 		}
 
 		if (gameState == RESUME1) {
@@ -82,11 +105,11 @@ int Gameplay::init () {
 		
 		// Mode 1, single player
 		if (gameState == MODE1 || gameState == RESUME1) {			
-			window.clear ();
+			window.clear ();			
 			window.draw (shape);
-			window.draw (myPaddle.paddle);
-			window.draw (score);
+			window.draw (myPaddle.paddle);			
 			window.draw (pong.ball);
+			window.draw (lifeText);
 		}
 
 		window.display ();
@@ -95,7 +118,7 @@ int Gameplay::init () {
 	return EXIT_SUCCESS;
 }
 
-void Gameplay::restart () {
+void Gameplay::restart () {	
 	gameState = MODE1;
 	clock.restart ();
 
@@ -114,7 +137,16 @@ void Gameplay::updateScore () {
 	score.setPosition (10, 10);
 }
 
+void Gameplay::updateLife () {
+	std::stringstream str;
+	str << "Life: " << life;
+	lifeText.setString (str.str ());
+	lifeText.setPosition (10, gameHeight - 40);
+}
+
 int Gameplay::selectMode (sf::RenderWindow& window) {
+	life = 3;
+	updateLife ();
 	// Welcome text
 	sf::Text welcome[5];
 	std::string msg[5] = { "Press 1 - You VS Ai", "2 - You + Friend VS 2 Ai" , "Player1 uses WSAD", "Player2 uses Arrow Keys.", "Press Esc to exit." };
@@ -123,7 +155,7 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 		welcome[i].setFillColor (sf::Color (239, 187, 56));
 		welcome[i].setCharacterSize (30);
 		welcome[i].setString (msg[i]);
-		welcome[i].setFont (fontHEM);
+		welcome[i].setFont (fontHNMed);
 	}	
 
 	// Main loop
@@ -134,6 +166,7 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 				window.close ();
 				return -1;
 			}
+
 			if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Num1) {
 				gameState = MODE1;
 				p1Score = 0;
@@ -201,26 +234,19 @@ void Gameplay::gameMode1 () {
 	// Check collisions between the ball and the screen
 	if (pong.ball.getPosition ().y - pong.ballRadius < 0.f) {
 		pong.ballSound.play ();
-		/*p2Score++;
-		std::stringstream str;
-		str << p1Score << "   " << p2Score;
-		score.setString (str.str ());
-		score.setPosition (gameWidth / 2 - score.getGlobalBounds ().width / 2, 40);*/
 		pong.ballAngle = - pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, pong.ballRadius + 0.1f);
-		std::cout << "ballAngle: " << pong.ballAngle << std::endl;
-		//restart ();
 	}
 	if (pong.ball.getPosition ().y + pong.ballRadius > gameHeight) {
-		/*p1Score++;
-		std::stringstream str;
-		str << p1Score << "   " << p2Score;
-		score.setString (str.str ());
-		score.setPosition (gameWidth / 2 - score.getGlobalBounds ().width / 2, 40);*/
 		pong.ballAngle = - pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, gameHeight - pong.ballRadius - 0.1f);
-		std::cout << "ballAngle: " << pong.ballAngle << std::endl;
-		//restart ();
+
+		life--;	
+		updateLife ();
+
+		std::cout << "life: " << life << std::endl;
+		gameState = MODE1;
+		restart ();
 	}
 	if (pong.ball.getPosition ().x - pong.ballRadius < 0.f) {
 		pong.ballSound.play ();

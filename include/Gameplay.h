@@ -15,12 +15,13 @@ public:
 	Paddle myPaddle;
 	Paddle rightPaddle;
 
-	sf::Font fontSansation;
-	sf::Font fontArial;
-	sf::Font fontHEM;
+	sf::Font fontHNMed;
+	sf::Font fontHNM;
+	sf::Font fontHNL;
 	sf::Text pauseMessage;
 	sf::Clock AITimer;
 	sf::Text score;
+	sf::Text lifeText;
 	sf::Texture bgTex;    //background
 	sf::RectangleShape shape;    //background
 
@@ -33,10 +34,12 @@ public:
 	enum states { INTRO, MODE1, MODE2, RESUME1, RESUME2, P1WON, P1LOST };
 	int gameState = INTRO;
 	int isSlow = 0;
+	int life = 3;
 
 	int init ();
 	void restart ();
 	void updateScore ();
+	void updateLife ();
 	int selectMode (sf::RenderWindow& window);
 	void gameMode1 ();
 	void gameMode2 ();
