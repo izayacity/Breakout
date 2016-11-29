@@ -4,16 +4,18 @@
 #include "../include/Ball.h"
 #include "../include/Paddle.h"
 #include "../include/Collision.h"
+#include "../include/Brick.h"
+#include <vector>
 
 class Gameplay {
 private:
 	const float pi = 3.14159f;
 	const int gameWidth = 600;
 	const int gameHeight = 800;
+
 public:
 	Ball pong;
 	Paddle myPaddle;
-	Paddle rightPaddle;
 
 	sf::Font fontHNMed;
 	sf::Font fontHNM;
@@ -22,8 +24,11 @@ public:
 	sf::Clock AITimer;
 	sf::Text score;
 	sf::Text lifeText;
-	sf::Texture bgTex;    //background
-	sf::RectangleShape shape;    //background
+	sf::Texture bgTex;    //background texture
+	sf::RectangleShape shape;    //background shape
+	std::vector<Brick> bricks;
+	int bricks_show[18];
+	sf::RenderWindow window;
 
 	// Define the paddles properties
 	const sf::Time AITime = sf::seconds (0.1f);	
@@ -31,16 +36,27 @@ public:
 	sf::Event event;
 
 	unsigned int p1Score = -1, p2Score = 0;
-	enum states { INTRO, MODE1, MODE2, RESUME1, RESUME2, P1WON, P1LOST };
+	enum states { INTRO, MODE1, MODE2, RESUME1, RESUME2, P1WIN, P1LOST };
 	int gameState = INTRO;
 	int isSlow = 0;
 	int life = 3;
+	float deltaTime;
+	int countBrick;
+	float fringe;
+	int sector;
 
+	Gameplay () : window(sf::VideoMode (gameWidth, gameHeight, 32), "Breakout++") {
+
+	}
 	int init ();
 	void restart ();
 	void updateScore ();
 	void updateLife ();
 	int selectMode (sf::RenderWindow& window);
-	void gameMode1 ();
+	int gameMode1 ();
 	void gameMode2 ();
+	void level1 ();
+	void level2 ();
+	void renderFrame (); // Draw game objects
+	int isWin ();
 };

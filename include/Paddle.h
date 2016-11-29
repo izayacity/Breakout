@@ -6,10 +6,8 @@ public:
 	sf::RectangleShape paddle;
 	sf::Vector2f paddleSize;
 	const float paddleSpeed;
-	float rightPaddleSpeed;
 
-	Paddle () : paddleSize(100.0f, 25.0f), paddleSpeed(400.f), rightPaddleSpeed(0.f) {
-		// Create the left paddle	
+	Paddle () : paddleSize(100.0f, 25.0f), paddleSpeed(400.f){
 		paddle.setSize (paddleSize - sf::Vector2f (3, 3));
 		paddle.setOutlineThickness (1);
 		paddle.setOutlineColor (sf::Color::White);
