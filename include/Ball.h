@@ -9,7 +9,7 @@ public:
 	const float ballRadius;
 	float ballSpeed;
 	float ballAngle;
-	float ballAcceleration;	
+	float ballAcceleration;
 	sf::Texture ballTex;
 	sf::SoundBuffer ballSoundBuffer;
 	sf::Sound ballSound;

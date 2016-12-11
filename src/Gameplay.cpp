@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <assert.h>
 
 #define BRICKS1 18
 
@@ -29,7 +30,7 @@ void Gameplay::restart () {
 }
 
 int Gameplay::init () {	
-	std::srand (static_cast<unsigned int>(std::time (NULL)));	
+	std::srand (static_cast<unsigned int>(std::time (NULL)));
 	window.setFramerateLimit (60); // call it once, after creating the window
 
 	// Load the text font
@@ -179,7 +180,6 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 		window.draw (shape);
 		for (int i = 0; i < 5; i++)
 			window.draw (welcome[i]);
-
 		window.display ();
 	}
 }
@@ -187,16 +187,19 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 void Gameplay::level1 () {
 	for (int i = 0; i < 6; i++) {
 		bricks.push_back (Brick ());
+		std::rand () % 2 == 0 ? bricks[i].init1 () : bricks[i].init2();
 		bricks[i].brick.setPosition (i * 100 + 50.f, 12.5f);
 	}
 
 	for (int i = 6; i < 12; i++) {
 		bricks.push_back (Brick ());
+		std::rand () % 2 == 0 ? bricks[i].init1 () : bricks[i].init2 ();
 		bricks[i].brick.setPosition ((i - 6) * 100 + 50.f, 37.5f);
 	}
 
 	for (int i = 12; i < 18; i++) {
 		bricks.push_back (Brick ());
+		std::rand () % 2 == 0 ? bricks[i].init1 () : bricks[i].init2 ();
 		bricks[i].brick.setPosition ((i - 12) * 100 + 50.f, 62.5f);
 	}
 }
@@ -283,10 +286,24 @@ int Gameplay::gameMode1 () {
 				pong.ball.getPosition ().x <= bricks[sector].brick.getPosition ().x + 100.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius > bricks[sector].brick.getPosition ().y - 25.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius < bricks[sector].brick.getPosition ().y + 25.f / 2) {
+
+				if (bricks[sector].type == 1) {
+					if (bricks[sector].life == 2) {
+						assert (bricks[sector].brickTex.loadFromFile ("resources/broke.jpg"));
+						bricks[sector].brickTex.setSmooth (true);
+						bricks[sector].brick.setTexture (&bricks[sector].brickTex);
+						bricks[sector].life--;
+					} else if (bricks[sector].life <= 1) {
+						bricks_show[sector] = 0;
+					}
+				} else {
+					bricks_show[sector] = 0;
+				}
+
 				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
 				pong.ball.setPosition (pong.ball.getPosition ().x, 25.f + pong.ballRadius + 0.1f);
-				bricks_show[sector] = 0;
+				
 				if (isWin ()) {
 					gameState = P1WIN;
 					return gameState;
@@ -302,10 +319,24 @@ int Gameplay::gameMode1 () {
 				pong.ball.getPosition ().x <= bricks[6 + sector].brick.getPosition ().x + 100.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius > bricks[6 + sector].brick.getPosition ().y - 25.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius < bricks[6 + sector].brick.getPosition ().y + 25.f / 2) {
+
+				if (bricks[6 + sector].type == 1) {
+					if (bricks[6 + sector].life == 2) {
+						assert (bricks[6 + sector].brickTex.loadFromFile ("resources/broke.jpg"));
+						bricks[6 + sector].brickTex.setSmooth (true);
+						bricks[6 + sector].brick.setTexture (&bricks[6 + sector].brickTex);
+						bricks[6 + sector].life--;
+					} else if (bricks[6 + sector].life <= 1) {
+						bricks_show[6 + sector] = 0;
+					}
+				} else {
+					bricks_show[6 + sector] = 0;
+				}
+
 				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
 				pong.ball.setPosition (pong.ball.getPosition ().x, 50.f + pong.ballRadius + 0.1f);
-				bricks_show[6 + sector] = 0;
+
 				if (isWin ()) {
 					gameState = P1WIN;
 					return gameState;
@@ -321,10 +352,24 @@ int Gameplay::gameMode1 () {
 				pong.ball.getPosition ().x <= bricks[12 + sector].brick.getPosition ().x + 100.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius > bricks[12 + sector].brick.getPosition ().y - 25.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius < bricks[12 + sector].brick.getPosition ().y + 25.f / 2) {
+
+				if (bricks[12 + sector].type == 1) {
+					if (bricks[12 + sector].life == 2) {
+						assert (bricks[12 + sector].brickTex.loadFromFile ("resources/broke.jpg"));
+						bricks[12 + sector].brickTex.setSmooth (true);
+						bricks[12 + sector].brick.setTexture (&bricks[12 + sector].brickTex);
+						bricks[12 + sector].life--;
+					} else if (bricks[12 + sector].life <= 1) {
+						bricks_show[12 + sector] = 0;
+					}
+				} else {
+					bricks_show[12 + sector] = 0;
+				}
+
 				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
 				pong.ball.setPosition (pong.ball.getPosition ().x, 75.f + pong.ballRadius + 0.1f);
-				bricks_show[12 + sector] = 0;
+
 				if (isWin ()) {
 					gameState = P1WIN;
 					return gameState;
