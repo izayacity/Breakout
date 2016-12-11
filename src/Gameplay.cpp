@@ -55,6 +55,19 @@ int Gameplay::init () {
 	scoreText.setString ("Score: 0");
 	scoreText.setPosition (10, gameHeight - 75);
 
+	assert (paddle_sound_buffer.loadFromFile ("resources/paddle.wav"));
+	paddle_sound.setBuffer (paddle_sound_buffer);
+	assert (destroy_sound_buffer.loadFromFile ("resources/destroy.wav"));
+	destroy_sound.setBuffer (destroy_sound_buffer);
+	assert (damage_sound_buffer.loadFromFile ("resources/damage.wav"));
+	damage_sound.setBuffer (damage_sound_buffer);
+	assert (wall_sound_buffer.loadFromFile ("resources/wall.wav"));
+	wall_sound.setBuffer (wall_sound_buffer);
+	assert (lose_sound_buffer.loadFromFile ("resources/lose.wav"));
+	lose_sound.setBuffer (lose_sound_buffer);
+	assert (win_sound_buffer.loadFromFile ("resources/win.wav"));
+	win_sound.setBuffer (win_sound_buffer);
+
 	// Welcome background	
 	bgTex.loadFromFile ("resources/snow.jpg");
 	sf::Vector2f sz ((float)window.getSize ().x, (float)window.getSize ().y);
@@ -243,17 +256,18 @@ int Gameplay::gameMode1 () {
 		pong.ball.getPosition ().x <= myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2) {		
 		pong.ballAngle = -pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, myPaddle.paddle.getPosition ().y - pong.ballRadius - myPaddle.paddleSize.y / 2 - 0.1f);
-		pong.ballSound.play ();
+		paddle_sound.play ();
 	}
 
 	// Check collisions between the ball and the screen
 	else if (pong.ball.getPosition ().y - pong.ballRadius < 0.f) {
-		pong.ballSound.play ();
+		wall_sound.play ();
 		pong.ballAngle = - pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, pong.ballRadius + 0.1f);
 	}
 
 	else if (pong.ball.getPosition ().y + pong.ballRadius > gameHeight) {
+		lose_sound.play ();
 		pong.ballAngle = - pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, gameHeight - pong.ballRadius - 0.1f);
 
@@ -271,13 +285,13 @@ int Gameplay::gameMode1 () {
 	}
 
 	else if (pong.ball.getPosition ().x - pong.ballRadius < 0.f) {
-		pong.ballSound.play ();
+		wall_sound.play ();
 		pong.ballAngle = - (pi + pong.ballAngle);
 		pong.ball.setPosition (pong.ballRadius + 0.1f, pong.ball.getPosition ().y);
 	}
 
 	else if (pong.ball.getPosition ().x + pong.ballRadius > gameWidth) {
-		pong.ballSound.play ();
+		wall_sound.play ();
 		pong.ballAngle = (pi - pong.ballAngle);
 		pong.ball.setPosition (gameWidth - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
 	}
@@ -295,22 +309,24 @@ int Gameplay::gameMode1 () {
 
 				if (bricks[sector].type == 1) {
 					if (bricks[sector].life == 2) {
+						damage_sound.play ();
 						assert (bricks[sector].brickTex.loadFromFile ("resources/broke.jpg"));
 						bricks[sector].brickTex.setSmooth (true);
 						bricks[sector].brick.setTexture (&bricks[sector].brickTex);
 						bricks[sector].life--;
 					} else if (bricks[sector].life <= 1) {
+						destroy_sound.play ();
 						bricks_show[sector] = 0;
 						score += 50;
 						updateScore ();
 					}
 				} else {
+					destroy_sound.play ();
 					bricks_show[sector] = 0;
 					score += 10;
 					updateScore ();
 				}
 
-				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
 				pong.ball.setPosition (pong.ball.getPosition ().x, 25.f + pong.ballRadius + 0.1f);
 				
@@ -332,22 +348,24 @@ int Gameplay::gameMode1 () {
 
 				if (bricks[6 + sector].type == 1) {
 					if (bricks[6 + sector].life == 2) {
+						damage_sound.play ();
 						assert (bricks[6 + sector].brickTex.loadFromFile ("resources/broke.jpg"));
 						bricks[6 + sector].brickTex.setSmooth (true);
 						bricks[6 + sector].brick.setTexture (&bricks[6 + sector].brickTex);
 						bricks[6 + sector].life--;
 					} else if (bricks[6 + sector].life <= 1) {
+						destroy_sound.play ();
 						bricks_show[6 + sector] = 0;
 						score += 50;
 						updateScore ();
 					}
 				} else {
+					destroy_sound.play ();
 					bricks_show[6 + sector] = 0;
 					score += 10;
 					updateScore ();
 				}
 
-				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
 				pong.ball.setPosition (pong.ball.getPosition ().x, 50.f + pong.ballRadius + 0.1f);
 
@@ -369,22 +387,24 @@ int Gameplay::gameMode1 () {
 
 				if (bricks[12 + sector].type == 1) {
 					if (bricks[12 + sector].life == 2) {
+						damage_sound.play ();
 						assert (bricks[12 + sector].brickTex.loadFromFile ("resources/broke.jpg"));
 						bricks[12 + sector].brickTex.setSmooth (true);
 						bricks[12 + sector].brick.setTexture (&bricks[12 + sector].brickTex);
 						bricks[12 + sector].life--;
 					} else if (bricks[12 + sector].life <= 1) {
+						destroy_sound.play ();
 						bricks_show[12 + sector] = 0;
 						score += 50;
 						updateScore ();
 					}
 				} else {
+					destroy_sound.play ();
 					bricks_show[12 + sector] = 0;
 					score += 10;
 					updateScore ();
 				}
 
-				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
 				pong.ball.setPosition (pong.ball.getPosition ().x, 75.f + pong.ballRadius + 0.1f);
 

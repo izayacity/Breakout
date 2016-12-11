@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <assert.h>
-#include <SFML/Audio.hpp>
 
 class Ball : public sf::Sprite {
 public:
@@ -11,8 +10,6 @@ public:
 	float ballAngle;
 	float ballAcceleration;
 	sf::Texture ballTex;
-	sf::SoundBuffer ballSoundBuffer;
-	sf::Sound ballSound;
 
 	Ball () : ballRadius(20.f), ballSpeed(400.0f), ballAngle(0.0f), ballAcceleration(25.0f) {
 		// Create the ball
@@ -21,9 +18,7 @@ public:
 		ball.setOrigin (ballRadius, ballRadius);
 
 		// Load the texture of the ball		
-		assert (ballTex.loadFromFile ("resources/ball.png"));
-		assert (ballSoundBuffer.loadFromFile ("resources/ball.wav"));
-		ballSound.setBuffer (ballSoundBuffer);
+		assert (ballTex.loadFromFile ("resources/ball.png"));		
 		ballTex.setSmooth (true);
 		ball.setTexture (&ballTex);
 	}

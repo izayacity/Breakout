@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <ctime>
 #include "../include/Ball.h"
 #include "../include/Paddle.h"
@@ -29,6 +30,19 @@ public:
 	std::vector<Brick> bricks;
 	int bricks_show[18];
 	sf::RenderWindow window;
+
+	sf::SoundBuffer paddle_sound_buffer;
+	sf::Sound paddle_sound;
+	sf::SoundBuffer destroy_sound_buffer;
+	sf::Sound destroy_sound;
+	sf::SoundBuffer damage_sound_buffer;
+	sf::Sound damage_sound;
+	sf::SoundBuffer wall_sound_buffer;
+	sf::Sound wall_sound;
+	sf::SoundBuffer win_sound_buffer;
+	sf::Sound win_sound;
+	sf::SoundBuffer lose_sound_buffer;
+	sf::Sound lose_sound;
 
 	// Define the paddles properties
 	const sf::Time AITime = sf::seconds (0.1f);	
