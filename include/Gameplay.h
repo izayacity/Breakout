@@ -22,7 +22,7 @@ public:
 	sf::Font fontHNL;
 	sf::Text pauseMessage;
 	sf::Clock AITimer;
-	sf::Text score;
+	sf::Text scoreText;
 	sf::Text lifeText;
 	sf::Texture bgTex;    //background texture
 	sf::RectangleShape shape;    //background shape
@@ -35,15 +35,15 @@ public:
 	sf::Clock clock;
 	sf::Event event;
 
-	unsigned int p1Score = -1, p2Score = 0;
 	enum states { INTRO, MODE1, MODE2, RESUME1, RESUME2, P1WIN, P1LOST };
 	int gameState = INTRO;
 	int isSlow = 0;
 	int life = 3;
+	int score = 0;
 	float deltaTime;
 	int countBrick;
 	float fringe;
-	int sector;
+	int sector;	
 
 	Gameplay () : window(sf::VideoMode (gameWidth, gameHeight, 32), "Breakout++") {
 

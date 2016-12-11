@@ -14,9 +14,7 @@ public:
 		brick.setSize (brickSize);
 		brick.setOutlineThickness (1);
 		brick.setOutlineColor (sf::Color::White);
-		brick.setOrigin (brickSize / 2.f);
-
-		
+		brick.setOrigin (brickSize / 2.f);		
 	}
 
 	void init1 () {

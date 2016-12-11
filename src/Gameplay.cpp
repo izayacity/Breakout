@@ -49,9 +49,11 @@ int Gameplay::init () {
 	lifeText.setPosition (10, gameHeight - 40);
 
 	// Score text
-	score.setFont (fontHNL);
-	score.setCharacterSize (30);
-	score.setFillColor (sf::Color (239, 187, 56));
+	scoreText.setFont (fontHNM);
+	scoreText.setCharacterSize (30);
+	scoreText.setFillColor (sf::Color (239, 187, 56));
+	scoreText.setString ("Score: 0");
+	scoreText.setPosition (10, gameHeight - 75);
 
 	// Welcome background	
 	bgTex.loadFromFile ("resources/snow.jpg");
@@ -108,6 +110,7 @@ void Gameplay::renderFrame () {
 	window.draw (myPaddle.paddle);
 	window.draw (pong.ball);
 	window.draw (lifeText);
+	window.draw (scoreText);
 
 	if (gameState == MODE1 || gameState == RESUME1) {
 		int i = 0;
@@ -126,9 +129,9 @@ void Gameplay::renderFrame () {
 
 void Gameplay::updateScore () {
 	std::stringstream str;
-	str << p1Score << "   " << p2Score;
-	score.setString (str.str ());
-	score.setPosition (10, 10);
+	str << "Score: " << score;
+	scoreText.setString (str.str ());
+	scoreText.setPosition (10, gameHeight - 75);
 }
 
 void Gameplay::updateLife () {
@@ -141,6 +144,9 @@ void Gameplay::updateLife () {
 int Gameplay::selectMode (sf::RenderWindow& window) {
 	life = 3;
 	updateLife ();
+	score = 0;
+	updateScore ();
+
 	for (int i = 0; i < 18; i++) {
 		bricks_show[i] = 1;
 	}
@@ -295,9 +301,13 @@ int Gameplay::gameMode1 () {
 						bricks[sector].life--;
 					} else if (bricks[sector].life <= 1) {
 						bricks_show[sector] = 0;
+						score += 50;
+						updateScore ();
 					}
 				} else {
 					bricks_show[sector] = 0;
+					score += 10;
+					updateScore ();
 				}
 
 				pong.ballSound.play ();
@@ -328,9 +338,13 @@ int Gameplay::gameMode1 () {
 						bricks[6 + sector].life--;
 					} else if (bricks[6 + sector].life <= 1) {
 						bricks_show[6 + sector] = 0;
+						score += 50;
+						updateScore ();
 					}
 				} else {
 					bricks_show[6 + sector] = 0;
+					score += 10;
+					updateScore ();
 				}
 
 				pong.ballSound.play ();
@@ -361,9 +375,13 @@ int Gameplay::gameMode1 () {
 						bricks[12 + sector].life--;
 					} else if (bricks[12 + sector].life <= 1) {
 						bricks_show[12 + sector] = 0;
+						score += 50;
+						updateScore ();
 					}
 				} else {
 					bricks_show[12 + sector] = 0;
+					score += 10;
+					updateScore ();
 				}
 
 				pong.ballSound.play ();
