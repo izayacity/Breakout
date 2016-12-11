@@ -229,9 +229,9 @@ int Gameplay::gameMode1 () {
 
 	// Check the collisions between the ball and the paddles
 	if (pong.ball.getPosition ().y + pong.ballRadius > myPaddle.paddle.getPosition ().y - myPaddle.paddleSize.y / 2 &&
-		pong.ball.getPosition ().y + pong.ballRadius < myPaddle.paddle.getPosition ().y &&
-		pong.ball.getPosition ().x - pong.ballRadius >= myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 &&
-		pong.ball.getPosition ().x + pong.ballRadius <= myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2) {		
+		pong.ball.getPosition ().y + pong.ballRadius < myPaddle.paddle.getPosition ().y + myPaddle.paddleSize.y / 2 &&
+		pong.ball.getPosition ().x >= myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 &&
+		pong.ball.getPosition ().x <= myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2) {		
 		pong.ballAngle = -pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, myPaddle.paddle.getPosition ().y - pong.ballRadius - myPaddle.paddleSize.y / 2 - 0.1f);
 		pong.ballSound.play ();
@@ -279,9 +279,9 @@ int Gameplay::gameMode1 () {
 			sector = (int)(pong.ball.getPosition ().x / 100);
 
 			if (bricks_show[sector] == 1 &&
-				pong.ball.getPosition ().x - pong.ballRadius >= bricks[sector].brick.getPosition ().x - 100.f / 2 &&
-				pong.ball.getPosition ().x + pong.ballRadius <= bricks[sector].brick.getPosition ().x + 100.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius > bricks[sector].brick.getPosition ().y &&
+				pong.ball.getPosition ().x >= bricks[sector].brick.getPosition ().x - 100.f / 2 &&
+				pong.ball.getPosition ().x <= bricks[sector].brick.getPosition ().x + 100.f / 2 &&
+				pong.ball.getPosition ().y - pong.ballRadius > bricks[sector].brick.getPosition ().y - 25.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius < bricks[sector].brick.getPosition ().y + 25.f / 2) {
 				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
@@ -298,9 +298,9 @@ int Gameplay::gameMode1 () {
 			sector = (int)(pong.ball.getPosition ().x / 100);
 
 			if (bricks_show[6 + sector] == 1 &&
-				pong.ball.getPosition ().x - pong.ballRadius >= bricks[6 + sector].brick.getPosition ().x - 100.f / 2 &&
-				pong.ball.getPosition ().x + pong.ballRadius <= bricks[6 + sector].brick.getPosition ().x + 100.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius > bricks[6 + sector].brick.getPosition ().y &&
+				pong.ball.getPosition ().x >= bricks[6 + sector].brick.getPosition ().x - 100.f / 2 &&
+				pong.ball.getPosition ().x <= bricks[6 + sector].brick.getPosition ().x + 100.f / 2 &&
+				pong.ball.getPosition ().y - pong.ballRadius > bricks[6 + sector].brick.getPosition ().y - 25.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius < bricks[6 + sector].brick.getPosition ().y + 25.f / 2) {
 				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
@@ -317,9 +317,9 @@ int Gameplay::gameMode1 () {
 			sector = (int)(pong.ball.getPosition ().x / 100);
 
 			if (bricks_show[12 + sector] == 1 &&
-				pong.ball.getPosition ().x - pong.ballRadius >= bricks[12 + sector].brick.getPosition ().x - 100.f / 2 &&
-				pong.ball.getPosition ().x + pong.ballRadius <= bricks[12 + sector].brick.getPosition ().x + 100.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius > bricks[12 + sector].brick.getPosition ().y &&
+				pong.ball.getPosition ().x >= bricks[12 + sector].brick.getPosition ().x - 100.f / 2 &&
+				pong.ball.getPosition ().x <= bricks[12 + sector].brick.getPosition ().x + 100.f / 2 &&
+				pong.ball.getPosition ().y - pong.ballRadius > bricks[12 + sector].brick.getPosition ().y - 25.f / 2 &&
 				pong.ball.getPosition ().y - pong.ballRadius < bricks[12 + sector].brick.getPosition ().y + 25.f / 2) {
 				pong.ballSound.play ();
 				pong.ballAngle = -pong.ballAngle;
@@ -330,8 +330,8 @@ int Gameplay::gameMode1 () {
 					return gameState;
 				}
 			}
-		}		
-	}		
+		}
+	}
 
 	return gameState;
 }

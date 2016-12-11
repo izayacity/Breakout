@@ -18,7 +18,7 @@ public:
 		// Create the ball
 		ball.setRadius (ballRadius);
 		ball.setFillColor (sf::Color::White);
-		ball.setOrigin (ballRadius / 2, ballRadius / 2);
+		ball.setOrigin (ballRadius, ballRadius);
 
 		// Load the texture of the ball		
 		assert (ballTex.loadFromFile ("resources/ball.png"));
