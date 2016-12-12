@@ -68,10 +68,11 @@ public:
 	void updateScore ();
 	void updateLife ();
 	int selectMode (sf::RenderWindow& window);
-	int update_state ();
+	void update_state ();
 	void level0 ();
 	void level1 ();
 	void level2 ();
 	void renderFrame (); // Draw game objects
 	int isWin ();
+	void collisionResult (int index);
 };

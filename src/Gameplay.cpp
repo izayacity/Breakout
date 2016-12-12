@@ -12,13 +12,11 @@
 #include <assert.h>
 
 void Gameplay::restart () {	
-	gameState = MODE1;
 	clock.restart ();
 
 	// Reset the position of the paddles and ball
 	myPaddle.paddle.setPosition (gameWidth / 2, gameHeight - myPaddle.paddleSize.y / 2);
 	pong.ball.setPosition (gameWidth / 2, gameHeight - myPaddle.paddleSize.y - pong.ballRadius - 3);
-	pong.ballSpeed = 450.f;
 
 	// Reset the ball angle
 	do {
@@ -244,18 +242,7 @@ void Gameplay::level2 () {
 	}
 }
 
-int Gameplay::update_state () {	
-	// Move the player's paddle
-	//if (sf::Keyboard::isKeyPressed (sf::Keyboard::Up) &&
-	//	(myPaddle.paddle.getPosition ().y - myPaddle.paddleSize.y / 2 > gameHeight / 2)) {
-	//	myPaddle.paddle.move (0.f, -myPaddle.paddleSpeed * deltaTime);
-	//}
-
-	//if (sf::Keyboard::isKeyPressed (sf::Keyboard::Down) &&
-	//	(myPaddle.paddle.getPosition ().y + myPaddle.paddleSize.y / 2 < gameHeight - 5.f)) {
-	//	myPaddle.paddle.move (0.f, myPaddle.paddleSpeed * deltaTime);
-	//}
-
+void Gameplay::update_state () {	
 	if (sf::Keyboard::isKeyPressed (sf::Keyboard::Left) &&
 		(myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 > 5.f)) {
 		myPaddle.paddle.move (-myPaddle.paddleSpeed * deltaTime, 0.f);
@@ -274,9 +261,23 @@ int Gameplay::update_state () {
 	if (pong.ball.getPosition ().y + pong.ballRadius > myPaddle.paddle.getPosition ().y - myPaddle.paddleSize.y / 2 &&
 		pong.ball.getPosition ().y + pong.ballRadius < myPaddle.paddle.getPosition ().y + myPaddle.paddleSize.y / 2 &&
 		pong.ball.getPosition ().x >= myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 &&
-		pong.ball.getPosition ().x <= myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2) {		
+		pong.ball.getPosition ().x <= myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2) {	
 		pong.ballAngle = -pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, myPaddle.paddle.getPosition ().y - pong.ballRadius - myPaddle.paddleSize.y / 2 - 0.1f);
+		paddle_sound.play ();
+	} else if (pong.ball.getPosition ().x + pong.ballRadius > myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 &&
+		pong.ball.getPosition ().x + pong.ballRadius < myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2 &&
+		pong.ball.getPosition ().y >= myPaddle.paddle.getPosition ().y - myPaddle.paddleSize.y / 2 &&
+		pong.ball.getPosition ().y <= myPaddle.paddle.getPosition ().y + myPaddle.paddleSize.y / 2) {
+		pong.ballAngle = (pi - pong.ballAngle);
+		pong.ball.setPosition (myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
+		paddle_sound.play ();
+	} else if (pong.ball.getPosition ().x - pong.ballRadius > myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 &&
+		pong.ball.getPosition ().x - pong.ballRadius < myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2 &&
+		pong.ball.getPosition ().y >= myPaddle.paddle.getPosition ().y - myPaddle.paddleSize.y / 2 &&
+		pong.ball.getPosition ().y <= myPaddle.paddle.getPosition ().y + myPaddle.paddleSize.y / 2) {
+		pong.ballAngle = -(pi + pong.ballAngle);
+		pong.ball.setPosition (myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2 + pong.ballRadius + 0.1f, pong.ball.getPosition ().y);
 		paddle_sound.play ();
 	}
 
@@ -301,10 +302,8 @@ int Gameplay::update_state () {
 		} else {
 			gameState = LOST;
 		}
-				
-		return gameState;
 	}
-
+	// Check collisions between the ball and the wall
 	else if (pong.ball.getPosition ().x - pong.ballRadius < 0.f) {
 		wall_sound.play ();
 		pong.ballAngle = - (pi + pong.ballAngle);
@@ -322,54 +321,65 @@ int Gameplay::update_state () {
 		for (int j = 0; j < 10; j++) {
 			if ((pong.ball.getPosition ().y - pong.ballRadius <= 25.f * (j + 1)) && (pong.ball.getPosition ().y - pong.ballRadius >= 25.f * j)) {
 				sector = (int)(pong.ball.getPosition ().x / 100);
-				int index = sector + 6 * j;
+				int index0 = sector + 6 * j;
+				int index1 = sector + 6 * (j + 1);
+				int index2 = sector + 6 * j + 1;
+				int index3 = sector + 6 * j - 1;
+				int index4 = sector + 6 * (j + 1) + 1;
+				int index5 = sector + 6 * (j + 1) - 1;
 
-				if (bricks_show[index] == 1 &&
-					pong.ball.getPosition ().x >= bricks[index].brick.getPosition ().x - 100.f / 2 &&
-					pong.ball.getPosition ().x <= bricks[index].brick.getPosition ().x + 100.f / 2 &&
-					pong.ball.getPosition ().y - pong.ballRadius > bricks[index].brick.getPosition ().y - 25.f / 2 &&
-					pong.ball.getPosition ().y - pong.ballRadius < bricks[index].brick.getPosition ().y + 25.f / 2) {
-
-					if (bricks[index].type == 1) {
-						if (bricks[index].life == 2) {
-							damage_sound.play ();
-							// Set broke texture
-							bricks[index].brick.setTexture (&bricks[index].brokeTex);
-							bricks[index].life--;
-						} else if (bricks[index].life <= 1) {
-							destroy_sound.play ();
-							bricks_show[index] = 0;
-							score += 50;
-							updateScore ();
-						}
-					} else {
-						destroy_sound.play ();
-						bricks_show[index] = 0;
-						score += 10;
-						updateScore ();
-					}
-
+				if (bricks_show[index0] == 1 &&
+					pong.ball.getPosition ().x >= bricks[index0].brick.getPosition ().x - 100.f / 2 &&
+					pong.ball.getPosition ().x <= bricks[index0].brick.getPosition ().x + 100.f / 2 &&
+					pong.ball.getPosition ().y - pong.ballRadius >= bricks[index0].brick.getPosition ().y - 25.f / 2 &&
+					pong.ball.getPosition ().y - pong.ballRadius <= bricks[index0].brick.getPosition ().y + 25.f / 2) {
 					pong.ballAngle = -pong.ballAngle;
 					pong.ball.setPosition (pong.ball.getPosition ().x, 25.f * (j + 1) + pong.ballRadius + 0.1f);
-
-					// Go to the next level, speed would be increased 100 if ball speed is lower than 800
-					if (gameState ==  M1L1 && isWin()) {
-						gameState = MODE10;
-						level2 ();
-						pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
-						return gameState;
-					} else if (gameState == M1L2 && isWin ()) {
-						gameState = MODE1;
-						level1 ();
-						pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
-						return gameState;
-					}
+					collisionResult (index0);
+				} else if (bricks_show[index1] == 1 &&
+					pong.ball.getPosition ().x >= bricks[index1].brick.getPosition ().x - 100.f / 2 &&
+					pong.ball.getPosition ().x <= bricks[index1].brick.getPosition ().x + 100.f / 2 &&
+					pong.ball.getPosition ().y + pong.ballRadius >= bricks[index1].brick.getPosition ().y - 25.f / 2 &&
+					pong.ball.getPosition ().y + pong.ballRadius <= bricks[index1].brick.getPosition ().y + 25.f / 2) {
+					pong.ballAngle = -pong.ballAngle;
+					pong.ball.setPosition (pong.ball.getPosition ().x, 25.f * (j + 1) - pong.ballRadius - 0.1f);
+					collisionResult (index1);
+				}  else if (bricks_show[index2] == 1 &&
+					pong.ball.getPosition ().y >= bricks[index2].brick.getPosition ().y - 25.f / 2 &&
+					pong.ball.getPosition ().y <= bricks[index2].brick.getPosition ().y + 25.f / 2 &&
+					pong.ball.getPosition ().x + pong.ballRadius >= bricks[index2].brick.getPosition ().x - 100.f / 2 &&
+					pong.ball.getPosition ().x + pong.ballRadius <= bricks[index2].brick.getPosition ().x + 100.f / 2) {
+					pong.ballAngle = (pi - pong.ballAngle);
+					pong.ball.setPosition (bricks[index2].brick.getPosition ().x - 100.f / 2 - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
+					collisionResult (index2);
+				} else if (bricks_show[index3] == 1 &&
+					pong.ball.getPosition ().y >= bricks[index3].brick.getPosition ().y - 25.f / 2 &&
+					pong.ball.getPosition ().y <= bricks[index3].brick.getPosition ().y + 25.f / 2 &&
+					pong.ball.getPosition ().x - pong.ballRadius >= bricks[index3].brick.getPosition ().x - 100.f / 2 &&
+					pong.ball.getPosition ().x - pong.ballRadius <= bricks[index3].brick.getPosition ().x + 100.f / 2) {
+					pong.ballAngle = -(pi + pong.ballAngle);
+					pong.ball.setPosition (bricks[index3].brick.getPosition ().x + 100.f / 2 + pong.ballRadius + 0.1f, pong.ball.getPosition ().y);
+					collisionResult (index3);
+				} else if (bricks_show[index4] == 1 &&
+					pong.ball.getPosition ().y >= bricks[index4].brick.getPosition ().y - 25.f / 2 &&
+					pong.ball.getPosition ().y <= bricks[index4].brick.getPosition ().y + 25.f / 2 &&
+					pong.ball.getPosition ().x + pong.ballRadius >= bricks[index4].brick.getPosition ().x - 100.f / 2 &&
+					pong.ball.getPosition ().x + pong.ballRadius <= bricks[index4].brick.getPosition ().x + 100.f / 2) {
+					pong.ballAngle = (pi - pong.ballAngle);
+					pong.ball.setPosition (bricks[index4].brick.getPosition ().x - 100.f / 2 - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
+					collisionResult (index4);
+				} else if (bricks_show[index5] == 1 &&
+					pong.ball.getPosition ().y >= bricks[index5].brick.getPosition ().y - 25.f / 2 &&
+					pong.ball.getPosition ().y <= bricks[index5].brick.getPosition ().y + 25.f / 2 &&
+					pong.ball.getPosition ().x - pong.ballRadius >= bricks[index5].brick.getPosition ().x - 100.f / 2 &&
+					pong.ball.getPosition ().x - pong.ballRadius <= bricks[index5].brick.getPosition ().x + 100.f / 2) {
+					pong.ballAngle = -(pi + pong.ballAngle);
+					pong.ball.setPosition (bricks[index5].brick.getPosition ().x + 100.f / 2 + pong.ballRadius + 0.1f, pong.ball.getPosition ().y);
+					collisionResult (index5);
 				}
 			}
 		}
 	}
-
-	return gameState;
 }
 
 int Gameplay::isWin () {
@@ -379,4 +389,38 @@ int Gameplay::isWin () {
 	}
 	win_sound.play ();
 	return 1;
+}
+
+void Gameplay::collisionResult (int index) {
+	if (bricks[index].type == 1) {
+		if (bricks[index].life == 2) {
+			damage_sound.play ();
+			// Set broke texture
+			bricks[index].brick.setTexture (&bricks[index].brokeTex);
+			bricks[index].life--;
+		} else if (bricks[index].life <= 1) {
+			destroy_sound.play ();
+			bricks_show[index] = 0;
+			score += 50;
+			updateScore ();
+		}
+	} else {
+		destroy_sound.play ();
+		bricks_show[index] = 0;
+		score += 10;
+		updateScore ();
+	}
+
+	// Go to the next level, speed would be increased 100 if ball speed is lower than 800
+	if (gameState == M1L1 && isWin ()) {
+		gameState = MODE10;
+		restart ();
+		level2 ();
+		pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
+	} else if (gameState == M1L2 && isWin ()) {
+		gameState = MODE1;
+		restart ();
+		level1 ();
+		pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
+	}
 }
