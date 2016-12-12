@@ -11,8 +11,6 @@
 #include <vector>
 #include <assert.h>
 
-#define BRICKS1 18
-
 void Gameplay::restart () {	
 	gameState = MODE1;
 	clock.restart ();
@@ -55,6 +53,7 @@ int Gameplay::init () {
 	scoreText.setString ("Score: 0");
 	scoreText.setPosition (10, gameHeight - 75);
 
+	// Sound effects
 	assert (paddle_sound_buffer.loadFromFile ("resources/paddle.wav"));
 	paddle_sound.setBuffer (paddle_sound_buffer);
 	assert (destroy_sound_buffer.loadFromFile ("resources/destroy.wav"));
@@ -74,8 +73,10 @@ int Gameplay::init () {
 	shape.setSize (sz);
 	shape.setTexture (&bgTex);
 
-	// Select game mode
+	// Select game mode, start from level1
 	gameState = selectMode (window);
+	level0 ();
+	level1 ();
 	restart ();
 
 	// Game loop window
@@ -84,22 +85,33 @@ int Gameplay::init () {
 			if ((event.type == sf::Event::Closed) ||
 				((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape))) {
 				gameState = selectMode (window);  //To be made as resumeWindow ()
+				level0 ();
+				level1 ();
 				restart ();
 				if (gameState == -1)
 					return EXIT_SUCCESS;
 				break;
 			}
-			if (gameState == MODE1 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
-				gameState = RESUME1;
+			// Enter level1 when pressing space key
+			else if (gameState == MODE1 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+				gameState = M1L1;
+			}
+			// Enter level2 when pressing space key
+			else if (gameState == MODE10 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+				gameState = M1L2;
 			}
 		}
 
 		deltaTime = clock.restart ().asSeconds ();
 
-		if (gameState == RESUME1) {
-			gameMode1 ();
+		if (gameState == M1L1) {
+			update_state ();
 		}
-		
+
+		else if (gameState == M1L2) {
+			update_state ();
+		}
+
 		renderFrame ();
 		window.display ();
 	}
@@ -108,12 +120,6 @@ int Gameplay::init () {
 }
 
 void Gameplay::renderFrame () {
-	// Win text
-	sf::Text wonText ("You won!\nPress esc to menu.", fontHNM, 40);
-	wonText.setPosition (gameWidth / 2 - wonText.getGlobalBounds ().width / 2, gameHeight / 2 - wonText.getGlobalBounds ().height / 2);
-	wonText.setFillColor (sf::Color::White);
-
-	// Lost text
 	sf::Text lostText ("You lost!\nPress esc to menu.", fontHNM, 40);
 	lostText.setPosition (gameWidth / 2 - lostText.getGlobalBounds ().width / 2, gameHeight / 2 - lostText.getGlobalBounds ().height / 2);
 	lostText.setFillColor (sf::Color::White);
@@ -125,18 +131,16 @@ void Gameplay::renderFrame () {
 	window.draw (lifeText);
 	window.draw (scoreText);
 
-	if (gameState == MODE1 || gameState == RESUME1) {
+	if (gameState == MODE1 || gameState == MODE10 || gameState == M1L1 || gameState == M1L2) {
 		int i = 0;
 		for (std::vector<Brick>::iterator it = bricks.begin (); it != bricks.end (); ++it) {
-			if (bricks_show[i] == 1) {
+			if (bricks_show[i] == 1) {				
 				window.draw ((*it).brick);
 			}
 			i++;
 		}
-	} else if (gameState == P1LOST) {
+	} else if (gameState == LOST) {
 		window.draw (lostText);
-	} else if (gameState == P1WIN) {
-		window.draw (wonText);
 	}
 }
 
@@ -160,9 +164,6 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 	score = 0;
 	updateScore ();
 
-	for (int i = 0; i < 18; i++) {
-		bricks_show[i] = 1;
-	}
 	// Welcome text
 	sf::Text welcome[5];
 	std::string msg[5] = { "Press 1 - You VS Ai", "2 - You + Friend VS 2 Ai" , "Player1 uses WSAD", "Player2 uses Arrow Keys.", "Press Esc to exit." };
@@ -178,17 +179,19 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 	while (true) {
 		sf::Event event;
 		while (window.pollEvent (event)) {
+			// Escape key to close the window
 			if (event.type == sf::Event::Closed || event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
 				window.close ();
 				return -1;
 			}
-
+			// Num1 key to enter mode1 single player
 			if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Num1) {
-				gameState = MODE1;
-				level1 ();
+				gameState = MODE1;				
 				window.clear ();
 				return gameState;
-			} else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Num2) {
+			}
+			// Num2 key to enter mode2 double player2
+			else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Num2) {
 				gameState = MODE2;
 				window.clear ();
 				return gameState;
@@ -203,27 +206,45 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 	}
 }
 
-void Gameplay::level1 () {
-	for (int i = 0; i < 6; i++) {
-		bricks.push_back (Brick ());
-		std::rand () % 2 == 0 ? bricks[i].init1 () : bricks[i].init2();
-		bricks[i].brick.setPosition (i * 100 + 50.f, 12.5f);
-	}
-
-	for (int i = 6; i < 12; i++) {
-		bricks.push_back (Brick ());
-		std::rand () % 2 == 0 ? bricks[i].init1 () : bricks[i].init2 ();
-		bricks[i].brick.setPosition ((i - 6) * 100 + 50.f, 37.5f);
-	}
-
-	for (int i = 12; i < 18; i++) {
-		bricks.push_back (Brick ());
-		std::rand () % 2 == 0 ? bricks[i].init1 () : bricks[i].init2 ();
-		bricks[i].brick.setPosition ((i - 12) * 100 + 50.f, 62.5f);
+void Gameplay::level0 () {
+	for (int j = 0; j < 10; j++) {
+		for (int i = 0; i < 6; i++) {
+			bricks.push_back (Brick ());
+			std::rand () % 2 == 0 ? bricks[i + 6 * j].init1 () : bricks[i + 6 * j].init2 ();
+			bricks[i + 6 * j].brick.setPosition (i * 100 + 50.f, 12.5f + 25.f * j);
+		}
 	}
 }
 
-int Gameplay::gameMode1 () {	
+void Gameplay::level1 () {	
+	for (int i = 0; i < BRICK_COUNT; i++) {
+		bricks_show[i] = 1;
+	}
+
+	for (int j = 1; j < 9; j++) {
+		for (int i = 0; i < 6; i++) {
+			if(j == 1 || j == 2 || j == 4 || j == 5 || j == 7 || j == 8)
+				bricks_show[j * 6 + i] = 0;
+		}
+	}
+
+	for (int j = 1; j < 10; j++) {
+		bricks_show[j * 6 + 1] = 0;
+		bricks_show[j * 6 + 4] = 0;
+	}
+}
+
+void Gameplay::level2 () {
+	for (int i = 0; i < BRICK_COUNT; i++) {
+		bricks_show[i] = 1;
+	}
+	
+	for (int i = 6; i < 54; i = i + 2) {
+		bricks_show[i] = 0;
+	}
+}
+
+int Gameplay::update_state () {	
 	// Move the player's paddle
 	//if (sf::Keyboard::isKeyPressed (sf::Keyboard::Up) &&
 	//	(myPaddle.paddle.getPosition ().y - myPaddle.paddleSize.y / 2 > gameHeight / 2)) {
@@ -278,7 +299,7 @@ int Gameplay::gameMode1 () {
 			gameState = MODE1;
 			restart ();
 		} else {
-			gameState = P1LOST;
+			gameState = LOST;
 		}
 				
 		return gameState;
@@ -296,121 +317,53 @@ int Gameplay::gameMode1 () {
 		pong.ball.setPosition (gameWidth - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
 	}
 
-	// Check the collisions between the ball and the bricks
+	// Check the collisions between the ball and the bricks, performance O(N)
 	else {
-		if (pong.ball.getPosition ().y - pong.ballRadius <= 26.f) {
-			sector = (int)(pong.ball.getPosition ().x / 100);
+		for (int j = 0; j < 10; j++) {
+			if ((pong.ball.getPosition ().y - pong.ballRadius <= 25.f * (j + 1)) && (pong.ball.getPosition ().y - pong.ballRadius >= 25.f * j)) {
+				sector = (int)(pong.ball.getPosition ().x / 100);
+				int index = sector + 6 * j;
 
-			if (bricks_show[sector] == 1 &&
-				pong.ball.getPosition ().x >= bricks[sector].brick.getPosition ().x - 100.f / 2 &&
-				pong.ball.getPosition ().x <= bricks[sector].brick.getPosition ().x + 100.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius > bricks[sector].brick.getPosition ().y - 25.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius < bricks[sector].brick.getPosition ().y + 25.f / 2) {
+				if (bricks_show[index] == 1 &&
+					pong.ball.getPosition ().x >= bricks[index].brick.getPosition ().x - 100.f / 2 &&
+					pong.ball.getPosition ().x <= bricks[index].brick.getPosition ().x + 100.f / 2 &&
+					pong.ball.getPosition ().y - pong.ballRadius > bricks[index].brick.getPosition ().y - 25.f / 2 &&
+					pong.ball.getPosition ().y - pong.ballRadius < bricks[index].brick.getPosition ().y + 25.f / 2) {
 
-				if (bricks[sector].type == 1) {
-					if (bricks[sector].life == 2) {
-						damage_sound.play ();
-						assert (bricks[sector].brickTex.loadFromFile ("resources/broke.jpg"));
-						bricks[sector].brickTex.setSmooth (true);
-						bricks[sector].brick.setTexture (&bricks[sector].brickTex);
-						bricks[sector].life--;
-					} else if (bricks[sector].life <= 1) {
+					if (bricks[index].type == 1) {
+						if (bricks[index].life == 2) {
+							damage_sound.play ();
+							// Set broke texture
+							bricks[index].brick.setTexture (&bricks[index].brokeTex);
+							bricks[index].life--;
+						} else if (bricks[index].life <= 1) {
+							destroy_sound.play ();
+							bricks_show[index] = 0;
+							score += 50;
+							updateScore ();
+						}
+					} else {
 						destroy_sound.play ();
-						bricks_show[sector] = 0;
-						score += 50;
+						bricks_show[index] = 0;
+						score += 10;
 						updateScore ();
 					}
-				} else {
-					destroy_sound.play ();
-					bricks_show[sector] = 0;
-					score += 10;
-					updateScore ();
-				}
 
-				pong.ballAngle = -pong.ballAngle;
-				pong.ball.setPosition (pong.ball.getPosition ().x, 25.f + pong.ballRadius + 0.1f);
-				
-				if (isWin ()) {
-					gameState = P1WIN;
-					return gameState;
-				}
-			}
-		}
+					pong.ballAngle = -pong.ballAngle;
+					pong.ball.setPosition (pong.ball.getPosition ().x, 25.f * (j + 1) + pong.ballRadius + 0.1f);
 
-		else if (pong.ball.getPosition ().y - pong.ballRadius <= 51.f && pong.ball.getPosition ().y - pong.ballRadius >= 25.f) {
-			sector = (int)(pong.ball.getPosition ().x / 100);
-
-			if (bricks_show[6 + sector] == 1 &&
-				pong.ball.getPosition ().x >= bricks[6 + sector].brick.getPosition ().x - 100.f / 2 &&
-				pong.ball.getPosition ().x <= bricks[6 + sector].brick.getPosition ().x + 100.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius > bricks[6 + sector].brick.getPosition ().y - 25.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius < bricks[6 + sector].brick.getPosition ().y + 25.f / 2) {
-
-				if (bricks[6 + sector].type == 1) {
-					if (bricks[6 + sector].life == 2) {
-						damage_sound.play ();
-						assert (bricks[6 + sector].brickTex.loadFromFile ("resources/broke.jpg"));
-						bricks[6 + sector].brickTex.setSmooth (true);
-						bricks[6 + sector].brick.setTexture (&bricks[6 + sector].brickTex);
-						bricks[6 + sector].life--;
-					} else if (bricks[6 + sector].life <= 1) {
-						destroy_sound.play ();
-						bricks_show[6 + sector] = 0;
-						score += 50;
-						updateScore ();
+					// Go to the next level, speed would be increased 100 if ball speed is lower than 800
+					if (gameState ==  M1L1 && isWin()) {
+						gameState = MODE10;
+						level2 ();
+						pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
+						return gameState;
+					} else if (gameState == M1L2 && isWin ()) {
+						gameState = MODE1;
+						level1 ();
+						pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
+						return gameState;
 					}
-				} else {
-					destroy_sound.play ();
-					bricks_show[6 + sector] = 0;
-					score += 10;
-					updateScore ();
-				}
-
-				pong.ballAngle = -pong.ballAngle;
-				pong.ball.setPosition (pong.ball.getPosition ().x, 50.f + pong.ballRadius + 0.1f);
-
-				if (isWin ()) {
-					gameState = P1WIN;
-					return gameState;
-				}
-			}
-		}
-
-		else if (pong.ball.getPosition ().y - pong.ballRadius <= 76.f && pong.ball.getPosition ().y - pong.ballRadius >= 50.f) {
-			sector = (int)(pong.ball.getPosition ().x / 100);
-
-			if (bricks_show[12 + sector] == 1 &&
-				pong.ball.getPosition ().x >= bricks[12 + sector].brick.getPosition ().x - 100.f / 2 &&
-				pong.ball.getPosition ().x <= bricks[12 + sector].brick.getPosition ().x + 100.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius > bricks[12 + sector].brick.getPosition ().y - 25.f / 2 &&
-				pong.ball.getPosition ().y - pong.ballRadius < bricks[12 + sector].brick.getPosition ().y + 25.f / 2) {
-
-				if (bricks[12 + sector].type == 1) {
-					if (bricks[12 + sector].life == 2) {
-						damage_sound.play ();
-						assert (bricks[12 + sector].brickTex.loadFromFile ("resources/broke.jpg"));
-						bricks[12 + sector].brickTex.setSmooth (true);
-						bricks[12 + sector].brick.setTexture (&bricks[12 + sector].brickTex);
-						bricks[12 + sector].life--;
-					} else if (bricks[12 + sector].life <= 1) {
-						destroy_sound.play ();
-						bricks_show[12 + sector] = 0;
-						score += 50;
-						updateScore ();
-					}
-				} else {
-					destroy_sound.play ();
-					bricks_show[12 + sector] = 0;
-					score += 10;
-					updateScore ();
-				}
-
-				pong.ballAngle = -pong.ballAngle;
-				pong.ball.setPosition (pong.ball.getPosition ().x, 75.f + pong.ballRadius + 0.1f);
-
-				if (isWin ()) {
-					gameState = P1WIN;
-					return gameState;
 				}
 			}
 		}
@@ -424,5 +377,6 @@ int Gameplay::isWin () {
 		if (i == 1)
 			return 0;
 	}
+	win_sound.play ();
 	return 1;
 }

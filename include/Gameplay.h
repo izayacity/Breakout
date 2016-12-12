@@ -28,7 +28,7 @@ public:
 	sf::Texture bgTex;    //background texture
 	sf::RectangleShape shape;    //background shape
 	std::vector<Brick> bricks;
-	int bricks_show[18];
+	int bricks_show[60];
 	sf::RenderWindow window;
 
 	sf::SoundBuffer paddle_sound_buffer;
@@ -49,7 +49,8 @@ public:
 	sf::Clock clock;
 	sf::Event event;
 
-	enum states { INTRO, MODE1, MODE2, RESUME1, RESUME2, P1WIN, P1LOST };
+	const int BRICK_COUNT;
+	enum states { INTRO, MODE1, MODE2, M1L1, MODE10, M1L2, RESUME2, LOST };
 	int gameState = INTRO;
 	int isSlow = 0;
 	int life = 3;
@@ -59,7 +60,7 @@ public:
 	float fringe;
 	int sector;	
 
-	Gameplay () : window(sf::VideoMode (gameWidth, gameHeight, 32), "Breakout++") {
+	Gameplay () : window(sf::VideoMode (gameWidth, gameHeight, 32), "Breakout++"), BRICK_COUNT(60) {
 
 	}
 	int init ();
@@ -67,8 +68,8 @@ public:
 	void updateScore ();
 	void updateLife ();
 	int selectMode (sf::RenderWindow& window);
-	int gameMode1 ();
-	void gameMode2 ();
+	int update_state ();
+	void level0 ();
 	void level1 ();
 	void level2 ();
 	void renderFrame (); // Draw game objects
