@@ -17,6 +17,7 @@ private:
 public:
 	Ball pong;
 	Paddle myPaddle;
+	Paddle Paddle2;
 
 	sf::Font fontHNMed;
 	sf::Font fontHNM;
@@ -50,7 +51,7 @@ public:
 	sf::Event event;
 
 	const int BRICK_COUNT;
-	enum states { INTRO, MODE1, MODE2, M1L1, MODE10, M1L2, RESUME2, LOST };
+	enum states { INTRO, MODE1, MODE2, MODE10, MODE20, M1L1, M1L2, M2L1, M2L2, RESUME2, LOST };
 	int gameState = INTRO;
 	int isSlow = 0;
 	int life = 3;

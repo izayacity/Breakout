@@ -15,7 +15,13 @@ void Gameplay::restart () {
 	clock.restart ();
 
 	// Reset the position of the paddles and ball
-	myPaddle.paddle.setPosition (gameWidth / 2, gameHeight - myPaddle.paddleSize.y / 2);
+	if (gameState == MODE1 || gameState == MODE10 || gameState == M1L1 || gameState == M1L2) {
+		myPaddle.paddle.setPosition (gameWidth / 2, gameHeight - myPaddle.paddleSize.y / 2);
+	} else if (gameState == MODE2 || gameState == MODE20 || gameState == M2L1 || gameState == M2L2) {
+		myPaddle.paddle.setPosition (gameWidth / 3, gameHeight - myPaddle.paddleSize.y / 2);
+		Paddle2.paddle.setPosition (gameWidth * 2 / 3, gameHeight - myPaddle.paddleSize.y / 2);
+	}
+
 	pong.ball.setPosition (gameWidth / 2, gameHeight - myPaddle.paddleSize.y - pong.ballRadius - 3);
 
 	// Reset the ball angle
@@ -90,19 +96,27 @@ int Gameplay::init () {
 					return EXIT_SUCCESS;
 				break;
 			}
-			// Enter level1 when pressing space key
+			// Enter level1 in single player mode1 when pressing space key
 			else if (gameState == MODE1 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
 				gameState = M1L1;
 			}
-			// Enter level2 when pressing space key
+			// Enter level2 in single player mode1 when pressing space key
 			else if (gameState == MODE10 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
 				gameState = M1L2;
+			}
+			// Enter level1 in single player mode2 when pressing space key
+			else if (gameState == MODE2 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+				gameState = M2L1;
+			}
+			// Enter level2 in single player mode2 when pressing space key
+			else if (gameState == MODE20 && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+				gameState = M2L2;
 			}
 		}
 
 		deltaTime = clock.restart ().asSeconds ();
 
-		if (gameState == M1L1 || gameState == M1L2) {
+		if (gameState == M1L1 || gameState == M1L2 || gameState == M2L1 || gameState == M2L2) {
 			update_state ();
 		}
 
@@ -125,7 +139,11 @@ void Gameplay::renderFrame () {
 	window.draw (lifeText);
 	window.draw (scoreText);
 
-	if (gameState == MODE1 || gameState == MODE10 || gameState == M1L1 || gameState == M1L2) {
+	if (gameState == MODE2 || gameState == MODE20 || gameState == M2L1 || gameState == M2L2) {
+		window.draw (Paddle2.paddle);
+	}
+
+	if (gameState == MODE1 || gameState == MODE10 || gameState == M1L1 || gameState == M1L2 || gameState == MODE2 || gameState == MODE20 || gameState == M2L1 || gameState == M2L2) {
 		int i = 0;
 		for (std::vector<Brick>::iterator it = bricks.begin (); it != bricks.end (); ++it) {
 			if (bricks_show[i] == 1) {				
@@ -160,7 +178,7 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 
 	// Welcome text
 	sf::Text welcome[5];
-	std::string msg[5] = { "Press 1 - You VS Ai", "2 - You + Friend VS 2 Ai" , "Player1 uses WSAD", "Player2 uses Arrow Keys.", "Press Esc to exit." };
+	std::string msg[5] = { "Press 1 - Single player(keyboard)", "2 - Double Player" , "Player1 uses WSAD", "Player2 uses Arrow Keys.", "Press Esc to exit." };
 	for (int i = 0; i < 5; i++) {
 		welcome[i].setPosition (50.0f, 50.0f * (i + 1));
 		welcome[i].setFillColor (sf::Color (239, 187, 56));
@@ -187,6 +205,7 @@ int Gameplay::selectMode (sf::RenderWindow& window) {
 			// Num2 key to enter mode2 double player2
 			else if (event.type == sf::Event::KeyReleased && event.key.code == sf::Keyboard::Num2) {
 				gameState = MODE2;
+				Paddle2.paddle.setFillColor (sf::Color (109, 192, 102));
 				window.clear ();
 				return gameState;
 			}
@@ -254,7 +273,11 @@ void Gameplay::level2 () {
 	}
 }
 
-void Gameplay::update_state () {	
+void Gameplay::update_state () {
+	// Move the ball
+	float factor = pong.ballSpeed * deltaTime;
+	pong.ball.move (std::cos (pong.ballAngle) * factor, std::sin (pong.ballAngle) * factor);
+
 	if (sf::Keyboard::isKeyPressed (sf::Keyboard::Left) &&
 		(myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 > 5.f)) {
 		myPaddle.paddle.move (-myPaddle.paddleSpeed * deltaTime, 0.f);
@@ -265,15 +288,47 @@ void Gameplay::update_state () {
 		myPaddle.paddle.move (myPaddle.paddleSpeed * deltaTime, 0.f);
 	}
 
-	// Move the ball
-	float factor = pong.ballSpeed * deltaTime;	
-	pong.ball.move (std::cos (pong.ballAngle) * factor, std::sin (pong.ballAngle) * factor);
+	if (gameState == M2L1 || gameState == M2L2) {
+		if (sf::Keyboard::isKeyPressed (sf::Keyboard::A) &&
+			(Paddle2.paddle.getPosition ().x - Paddle2.paddleSize.x / 2 > 5.f)) {
+			Paddle2.paddle.move (-Paddle2.paddleSpeed * deltaTime, 0.f);
+		}
+
+		if (sf::Keyboard::isKeyPressed (sf::Keyboard::D) &&
+			(Paddle2.paddle.getPosition ().x + Paddle2.paddleSize.x / 2 < gameWidth - 5.f)) {
+			Paddle2.paddle.move (Paddle2.paddleSpeed * deltaTime, 0.f);
+		}
+
+		// Check the collisions between the ball and the paddles
+		if (pong.ball.getPosition ().y + pong.ballRadius > Paddle2.paddle.getPosition ().y - Paddle2.paddleSize.y / 2 &&
+			pong.ball.getPosition ().y + pong.ballRadius < Paddle2.paddle.getPosition ().y + Paddle2.paddleSize.y / 2 &&
+			pong.ball.getPosition ().x >= Paddle2.paddle.getPosition ().x - Paddle2.paddleSize.x / 2 &&
+			pong.ball.getPosition ().x <= Paddle2.paddle.getPosition ().x + Paddle2.paddleSize.x / 2) {
+			pong.ballAngle = -pong.ballAngle;
+			pong.ball.setPosition (pong.ball.getPosition ().x, Paddle2.paddle.getPosition ().y - pong.ballRadius - Paddle2.paddleSize.y / 2 - 0.1f);
+			paddle_sound.play ();
+		} else if (pong.ball.getPosition ().x + pong.ballRadius > Paddle2.paddle.getPosition ().x - Paddle2.paddleSize.x / 2 &&
+			pong.ball.getPosition ().x + pong.ballRadius < Paddle2.paddle.getPosition ().x + Paddle2.paddleSize.x / 2 &&
+			pong.ball.getPosition ().y >= Paddle2.paddle.getPosition ().y - Paddle2.paddleSize.y / 2 &&
+			pong.ball.getPosition ().y <= Paddle2.paddle.getPosition ().y + Paddle2.paddleSize.y / 2) {
+			pong.ballAngle = (pi - pong.ballAngle);
+			pong.ball.setPosition (Paddle2.paddle.getPosition ().x - Paddle2.paddleSize.x / 2 - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
+			paddle_sound.play ();
+		} else if (pong.ball.getPosition ().x - pong.ballRadius > Paddle2.paddle.getPosition ().x - Paddle2.paddleSize.x / 2 &&
+			pong.ball.getPosition ().x - pong.ballRadius < Paddle2.paddle.getPosition ().x + Paddle2.paddleSize.x / 2 &&
+			pong.ball.getPosition ().y >= Paddle2.paddle.getPosition ().y - Paddle2.paddleSize.y / 2 &&
+			pong.ball.getPosition ().y <= Paddle2.paddle.getPosition ().y + Paddle2.paddleSize.y / 2) {
+			pong.ballAngle = -(pi + pong.ballAngle);
+			pong.ball.setPosition (Paddle2.paddle.getPosition ().x + Paddle2.paddleSize.x / 2 + pong.ballRadius + 0.1f, pong.ball.getPosition ().y);
+			paddle_sound.play ();
+		}
+	}
 
 	// Check the collisions between the ball and the paddles
 	if (pong.ball.getPosition ().y + pong.ballRadius > myPaddle.paddle.getPosition ().y - myPaddle.paddleSize.y / 2 &&
 		pong.ball.getPosition ().y + pong.ballRadius < myPaddle.paddle.getPosition ().y + myPaddle.paddleSize.y / 2 &&
 		pong.ball.getPosition ().x >= myPaddle.paddle.getPosition ().x - myPaddle.paddleSize.x / 2 &&
-		pong.ball.getPosition ().x <= myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2) {	
+		pong.ball.getPosition ().x <= myPaddle.paddle.getPosition ().x + myPaddle.paddleSize.x / 2) {
 		pong.ballAngle = -pong.ballAngle;
 		pong.ball.setPosition (pong.ball.getPosition ().x, myPaddle.paddle.getPosition ().y - pong.ballRadius - myPaddle.paddleSize.y / 2 - 0.1f);
 		paddle_sound.play ();
@@ -309,7 +364,15 @@ void Gameplay::update_state () {
 		updateLife ();
 
 		if (life > 0) {
-			gameState == M1L1 ? gameState = MODE1 : gameState = MODE10;
+			if (gameState == M1L1) {
+				gameState = MODE1;
+			} else if (gameState == M1L2) {
+				gameState = MODE10;
+			} else if (gameState == M2L1) {
+				gameState = MODE2;
+			} else if (gameState == M2L2) {
+				gameState = MODE20;
+			}
 			restart ();
 		} else {
 			gameState = LOST;
@@ -448,6 +511,20 @@ void Gameplay::collisionResult (int index) {
 		pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
 	} else if (gameState == M1L2 && isWin ()) {
 		gameState = MODE1;
+		restart ();
+		bricks.clear ();
+		level0 ();
+		level1 ();
+		pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
+	} else if (gameState == M2L1 && isWin ()) {
+		gameState = MODE20;
+		restart ();
+		bricks.clear ();
+		level0 ();
+		level2 ();
+		pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
+	} else if (gameState == M2L2 && isWin ()) {
+		gameState = MODE2;
 		restart ();
 		bricks.clear ();
 		level0 ();

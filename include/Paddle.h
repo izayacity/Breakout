@@ -11,7 +11,7 @@ public:
 		paddle.setSize (paddleSize - sf::Vector2f (3, 3));
 		paddle.setOutlineThickness (1);
 		paddle.setOutlineColor (sf::Color::White);
-		paddle.setFillColor (sf::Color (88, 98, 111));
+		paddle.setFillColor (sf::Color (128, 0, 128));
 		paddle.setOrigin (paddleSize / 2.f);
 	}
 
