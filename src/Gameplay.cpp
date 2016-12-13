@@ -102,11 +102,7 @@ int Gameplay::init () {
 
 		deltaTime = clock.restart ().asSeconds ();
 
-		if (gameState == M1L1) {
-			update_state ();
-		}
-
-		else if (gameState == M1L2) {
+		if (gameState == M1L1 || gameState == M1L2) {
 			update_state ();
 		}
 
@@ -208,14 +204,22 @@ void Gameplay::level0 () {
 	for (int j = 0; j < 10; j++) {
 		for (int i = 0; i < 6; i++) {
 			bricks.push_back (Brick ());
-			std::rand () % 2 == 0 ? bricks[i + 6 * j].init1 () : bricks[i + 6 * j].init2 ();
+			if(j != 0)
+				std::rand () % 2 == 0 ? bricks[i + 6 * j].init1 () : bricks[i + 6 * j].init2 ();
 			bricks[i + 6 * j].brick.setPosition (i * 100 + 50.f, 12.5f + 25.f * j);
 		}
 	}
+	for (int i = 0; i < 6; i++) {
+		bricks[i].init3 ();
+	}
 }
 
-void Gameplay::level1 () {	
-	for (int i = 0; i < BRICK_COUNT; i++) {
+void Gameplay::level1 () {
+	for (int i = 0; i < 6; i++) {
+		bricks_show[i] = 0;
+	}
+
+	for (int i = 6; i < BRICK_COUNT; i++) {
 		bricks_show[i] = 1;
 	}
 
@@ -229,16 +233,24 @@ void Gameplay::level1 () {
 	for (int j = 1; j < 10; j++) {
 		bricks_show[j * 6 + 1] = 0;
 		bricks_show[j * 6 + 4] = 0;
-	}
+	}	
 }
 
 void Gameplay::level2 () {
-	for (int i = 0; i < BRICK_COUNT; i++) {
+	for (int i = 0; i < 6; i++) {
+		bricks_show[i] = 0;
+	}
+
+	for (int i = 6; i < BRICK_COUNT; i++) {
 		bricks_show[i] = 1;
 	}
 	
-	for (int i = 6; i < 54; i = i + 2) {
+	for (int i = 6; i < 59; i = i + 2) {
 		bricks_show[i] = 0;
+	}
+
+	for (int i = 0; i < 6; i++) {
+		bricks[i].init3 ();
 	}
 }
 
@@ -297,7 +309,7 @@ void Gameplay::update_state () {
 		updateLife ();
 
 		if (life > 0) {
-			gameState = MODE1;
+			gameState == M1L1 ? gameState = MODE1 : gameState = MODE10;
 			restart ();
 		} else {
 			gameState = LOST;
@@ -317,7 +329,7 @@ void Gameplay::update_state () {
 	}
 
 	// Check the collisions between the ball and the bricks, performance O(N)
-	else {
+	else {	
 		for (int j = 0; j < 10; j++) {
 			if ((pong.ball.getPosition ().y - pong.ballRadius <= 25.f * (j + 1)) && (pong.ball.getPosition ().y - pong.ballRadius >= 25.f * j)) {
 				sector = (int)(pong.ball.getPosition ().x / 100);
@@ -327,8 +339,10 @@ void Gameplay::update_state () {
 				int index3 = sector + 6 * j - 1;
 				int index4 = sector + 6 * (j + 1) + 1;
 				int index5 = sector + 6 * (j + 1) - 1;
+				index4 > 59 ? index4 = 59 : index4;
+				index5 < 0 ? index5 = 0 : index5;
 
-				if (bricks_show[index0] == 1 &&
+				if (((bricks_show[index0] == 1) || (bricks[index0].type == 2 && bricks[index0].life == 2)) &&
 					pong.ball.getPosition ().x >= bricks[index0].brick.getPosition ().x - 100.f / 2 &&
 					pong.ball.getPosition ().x <= bricks[index0].brick.getPosition ().x + 100.f / 2 &&
 					pong.ball.getPosition ().y - pong.ballRadius >= bricks[index0].brick.getPosition ().y - 25.f / 2 &&
@@ -344,7 +358,7 @@ void Gameplay::update_state () {
 					pong.ballAngle = -pong.ballAngle;
 					pong.ball.setPosition (pong.ball.getPosition ().x, 25.f * (j + 1) - pong.ballRadius - 0.1f);
 					collisionResult (index1);
-				}  else if (bricks_show[index2] == 1 &&
+				}  else if ((bricks_show[index2] == 1) &&
 					pong.ball.getPosition ().y >= bricks[index2].brick.getPosition ().y - 25.f / 2 &&
 					pong.ball.getPosition ().y <= bricks[index2].brick.getPosition ().y + 25.f / 2 &&
 					pong.ball.getPosition ().x + pong.ballRadius >= bricks[index2].brick.getPosition ().x - 100.f / 2 &&
@@ -352,7 +366,7 @@ void Gameplay::update_state () {
 					pong.ballAngle = (pi - pong.ballAngle);
 					pong.ball.setPosition (bricks[index2].brick.getPosition ().x - 100.f / 2 - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
 					collisionResult (index2);
-				} else if (bricks_show[index3] == 1 &&
+				} else if ((bricks_show[index3] == 1) &&
 					pong.ball.getPosition ().y >= bricks[index3].brick.getPosition ().y - 25.f / 2 &&
 					pong.ball.getPosition ().y <= bricks[index3].brick.getPosition ().y + 25.f / 2 &&
 					pong.ball.getPosition ().x - pong.ballRadius >= bricks[index3].brick.getPosition ().x - 100.f / 2 &&
@@ -360,7 +374,7 @@ void Gameplay::update_state () {
 					pong.ballAngle = -(pi + pong.ballAngle);
 					pong.ball.setPosition (bricks[index3].brick.getPosition ().x + 100.f / 2 + pong.ballRadius + 0.1f, pong.ball.getPosition ().y);
 					collisionResult (index3);
-				} else if (bricks_show[index4] == 1 &&
+				} else if ((bricks_show[index4] == 1) &&
 					pong.ball.getPosition ().y >= bricks[index4].brick.getPosition ().y - 25.f / 2 &&
 					pong.ball.getPosition ().y <= bricks[index4].brick.getPosition ().y + 25.f / 2 &&
 					pong.ball.getPosition ().x + pong.ballRadius >= bricks[index4].brick.getPosition ().x - 100.f / 2 &&
@@ -368,7 +382,7 @@ void Gameplay::update_state () {
 					pong.ballAngle = (pi - pong.ballAngle);
 					pong.ball.setPosition (bricks[index4].brick.getPosition ().x - 100.f / 2 - pong.ballRadius - 0.1f, pong.ball.getPosition ().y);
 					collisionResult (index4);
-				} else if (bricks_show[index5] == 1 &&
+				} else if ((bricks_show[index5] == 1) &&
 					pong.ball.getPosition ().y >= bricks[index5].brick.getPosition ().y - 25.f / 2 &&
 					pong.ball.getPosition ().y <= bricks[index5].brick.getPosition ().y + 25.f / 2 &&
 					pong.ball.getPosition ().x - pong.ballRadius >= bricks[index5].brick.getPosition ().x - 100.f / 2 &&
@@ -404,7 +418,20 @@ void Gameplay::collisionResult (int index) {
 			score += 50;
 			updateScore ();
 		}
-	} else {
+	} else if (bricks[index].type == 2) {
+		if (bricks[index].life == 2) {
+			damage_sound.play ();
+			bricks_show[index] = 1;
+			// Set broke texture
+			bricks[index].brick.setTexture (&bricks[index].brokeTex);
+			bricks[index].life--;
+		} else if (bricks[index].life <= 1) {
+			destroy_sound.play ();
+			bricks_show[index] = 0;
+			score += 50;
+			updateScore ();
+		}
+	} else if (bricks[index].type == 0) {
 		destroy_sound.play ();
 		bricks_show[index] = 0;
 		score += 10;
@@ -415,11 +442,15 @@ void Gameplay::collisionResult (int index) {
 	if (gameState == M1L1 && isWin ()) {
 		gameState = MODE10;
 		restart ();
+		bricks.clear ();
+		level0 ();
 		level2 ();
 		pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
 	} else if (gameState == M1L2 && isWin ()) {
 		gameState = MODE1;
 		restart ();
+		bricks.clear ();
+		level0 ();
 		level1 ();
 		pong.ballSpeed < 800 ? pong.ballSpeed += 100 : pong.ballSpeed = 800;
 	}
