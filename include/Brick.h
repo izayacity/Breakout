@@ -6,7 +6,6 @@ class Brick {
 public:
 	sf::RectangleShape brick;
 	sf::Vector2f brickSize;
-	sf::Texture brickTex;
 	sf::Texture brokeTex;
 	int type;
 	int life;
@@ -14,7 +13,7 @@ public:
 	Brick () : brickSize(sf::Vector2f (100.0f, 25.0f)) {		
 	}
 	// normal brick, grey
-	void init1 () {
+	void init1 (sf::Texture *brickTexture) {
 		type = 0;
 		life = 1;		
 		brick.setFillColor (sf::Color (131, 60, 30));
@@ -22,9 +21,10 @@ public:
 		brick.setOutlineThickness (1);
 		brick.setOutlineColor (sf::Color::White);
 		brick.setOrigin (brickSize / 2.f);
+		brick.setTexture (brickTexture);
 	}
 	// hard brick, brown
-	void init2 () {
+	void init2 (sf::Texture *brickTexture) {
 		type = 1;
 		life = 2;
 		brick.setFillColor (sf::Color (195, 187, 168));
@@ -32,6 +32,7 @@ public:
 		brick.setOutlineThickness (1);
 		brick.setOutlineColor (sf::Color::White);
 		brick.setOrigin (brickSize / 2.f);
+		brick.setTexture (brickTexture);
 		assert (brokeTex.loadFromFile ("resources/crack.jpg"));
 		brokeTex.setSmooth (true);
 	}
@@ -46,7 +47,7 @@ public:
 
 	}
 	// invincible brick, dark grey
-	void init4 () {
+	void init4 (sf::Texture *brickTexture) {
 		type = 3;
 		life = ((unsigned int)-1) >> 1;
 		brick.setFillColor (sf::Color (51, 51, 51));
@@ -54,6 +55,7 @@ public:
 		brick.setOutlineThickness (1);
 		brick.setOutlineColor (sf::Color::White);
 		brick.setOrigin (brickSize / 2.f);
+		brick.setTexture (brickTexture);
 	}
 
 	sf::Vector2f getPosition () {

@@ -4,7 +4,6 @@
 #include <ctime>
 #include "../include/Ball.h"
 #include "../include/Paddle.h"
-#include "../include/Collision.h"
 #include "../include/Brick.h"
 #include <vector>
 
@@ -27,6 +26,8 @@ public:
 	sf::Text scoreText;
 	sf::Text lifeText;
 	sf::Texture bgTex;    //background texture
+	sf::Texture hard_brick_tex;
+	sf::Texture normal_brick_tex;
 	sf::RectangleShape shape;    //background shape
 	std::vector<Brick> bricks;
 	int bricks_show[60];
@@ -59,7 +60,7 @@ public:
 	float deltaTime;
 	int countBrick;
 	float fringe;
-	int sector;	
+	int sector;
 
 	Gameplay () : window(sf::VideoMode (gameWidth, gameHeight, 32), "Breakout++"), BRICK_COUNT(60) {
 

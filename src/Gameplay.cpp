@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <string>
 #include "../include/Gameplay.h"
-#include "../include/Collision.h"
 #include <sstream>
 #include <iostream>
 #include <vector>
@@ -72,10 +71,12 @@ int Gameplay::init () {
 	win_sound.setBuffer (win_sound_buffer);
 
 	// Welcome background	
-	bgTex.loadFromFile ("resources/snow.jpg");
+	assert (bgTex.loadFromFile ("resources/snow.jpg"));
 	sf::Vector2f sz ((float)window.getSize ().x, (float)window.getSize ().y);
 	shape.setSize (sz);
 	shape.setTexture (&bgTex);
+	assert (hard_brick_tex.loadFromFile ("resources/white.jpg"));
+	assert (normal_brick_tex.loadFromFile ("resources/brick.jpg"));
 
 	// Select game mode, start from level1
 	gameState = selectMode (window);
@@ -224,7 +225,7 @@ void Gameplay::level0 () {
 		for (int i = 0; i < 6; i++) {
 			bricks.push_back (Brick ());
 			if(j != 0)
-				std::rand () % 2 == 0 ? bricks[i + 6 * j].init1 () : bricks[i + 6 * j].init2 ();
+				std::rand () % 2 == 0 ? bricks[i + 6 * j].init1 (&normal_brick_tex) : bricks[i + 6 * j].init2 (&hard_brick_tex);
 			bricks[i + 6 * j].brick.setPosition (i * 100 + 50.f, 12.5f + 25.f * j);
 		}
 	}

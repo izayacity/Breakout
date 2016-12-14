@@ -149,13 +149,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\Collision.cpp" />
     <ClCompile Include="src\Gameplay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Ball.h" />
     <ClInclude Include="include\Brick.h" />
-    <ClInclude Include="include\Collision.h" />
     <ClInclude Include="include\Gameplay.h" />
     <ClInclude Include="include\Paddle.h" />
   </ItemGroup>
